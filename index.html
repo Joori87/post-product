@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101014">
+<title>Post Product</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#101014; --card:#1a1a21; --line:#2a2a33; --text:#f2f2f5; --muted:#9a9aa8;
+    --accent:#ff3d71; --accent2:#7b5cff; --ok:#2ecc8f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",sans-serif;}
+  body{padding:16px 16px 120px;max-width:560px;margin:0 auto}
+  h1{font-size:20px;margin:4px 0 2px;display:flex;align-items:center;gap:8px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input[type=text],textarea,select{width:100%;background:#121218;color:var(--text);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;font-size:15px;font-family:inherit}
+  textarea{min-height:150px;resize:vertical;line-height:1.45}
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  .tabs{display:flex;background:#121218;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:10px}
+  .tabs button{flex:1;border:0;background:transparent;color:var(--muted);padding:9px;border-radius:9px;font-size:14px;font-weight:600}
+  .tabs button.on{background:var(--line);color:var(--text)}
+  .preview{display:flex;justify-content:center;background:#0b0b0f;border-radius:12px;padding:10px}
+  canvas{max-width:100%;max-height:60vh;border-radius:8px;display:block}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;
+    padding:14px;font-size:16px;font-weight:700;color:#fff;cursor:pointer}
+  .btn.ig{background:linear-gradient(90deg,#f58529,#dd2a7b,#8134af)}
+  .btn.tt{background:#000;border:1px solid #333;box-shadow:inset 3px 0 0 #25f4ee, inset -3px 0 0 #fe2c55}
+  .btn.ghost{background:#24242d;color:var(--text);font-weight:600;font-size:14px;padding:11px}
+  .stack{display:grid;gap:10px}
+  .chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);margin-top:10px}
+  .chk input{width:18px;height:18px;accent-color:var(--accent)}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .empty{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);font-size:14px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:#24242d;
+    border:1px solid var(--line);color:var(--text);padding:12px 16px;border-radius:12px;font-size:14px;
+    transition:transform .25s,opacity .25s;opacity:0;pointer-events:none;max-width:90%;text-align:center;z-index:9}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .install{background:linear-gradient(90deg,var(--accent2),var(--accent));display:none}
+  .linkrow{display:flex;gap:8px}.linkrow input{flex:1}.linkrow button{flex:0 0 auto;width:auto;padding:10px 14px}
+  [dir=rtl]{text-align:right}
+</style>
+</head>
+<body>
+  <h1>🛍️ Post Product</h1>
+  <p class="sub">Share a product screenshot here → get a ready post for Instagram &amp; TikTok.</p>
+
+  <button class="btn install" id="installBtn">⬇️ Install app (adds it to your Share menu)</button>
+
+  <!-- IMAGE -->
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button data-p="ig" class="on">Instagram 4:5</button>
+      <button data-p="tt">TikTok 9:16</button>
+    </div>
+    <div class="preview"><canvas id="cv"></canvas></div>
+    <div class="stack" style="margin-top:10px">
+      <label class="btn ghost" for="file" style="margin:0">📷 Choose / change screenshot</label>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+    <label class="chk"><input type="checkbox" id="showPrice" checked> Show price tag on image</label>
+    <label class="chk"><input type="checkbox" id="showName"> Show product name on image</label>
+  </div>
+
+  <!-- DETAILS -->
+  <div class="card">
+    <label for="name">Product name</label>
+    <input type="text" id="name" placeholder="e.g. Wireless earbuds">
+    <div class="row">
+      <div><label for="price">Price</label><input type="text" id="price" placeholder="e.g. 149 SAR"></div>
+      <div><label for="store">Store</label><input type="text" id="store" placeholder="e.g. Amazon"></div>
+    </div>
+    <label for="link">Product link</label>
+    <div class="linkrow">
+      <input type="text" id="link" placeholder="https://…">
+      <button class="btn ghost" id="copyLink">Copy</button>
+    </div>
+    <div class="row">
+      <div><label for="lang">Caption language</label>
+        <select id="lang"><option value="en">English</option><option value="ar">العربية</option></select></div>
+      <div><label for="tone">Style</label>
+        <select id="tone">
+          <option value="excited">😍 Excited</option>
+          <option value="deal">🔥 Deal alert</option>
+          <option value="simple">✨ Simple</option>
+        </select></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="linkInCaption"> Put the link in the caption (otherwise "link in bio")</label>
+    <label class="chk"><input type="checkbox" id="isAd"> I earn money from this link (adds #ad)</label>
+  </div>
+
+  <!-- CAPTION -->
+  <div class="card">
+    <label for="caption" style="margin-top:0">Caption (you can edit it)</label>
+    <textarea id="caption"></textarea>
+    <div class="stack" style="margin-top:10px">
+      <button class="btn ghost" id="regen">↺ Rewrite caption from details</button>
+    </div>
+  </div>
+
+  <!-- POST -->
+  <div class="stack">
+    <button class="btn ig" id="shareIg">Post to Instagram</button>
+    <button class="btn tt" id="shareTt">Post to TikTok</button>
+    <div class="row">
+      <button class="btn ghost" id="copyCap">📋 Copy caption</button>
+      <button class="btn ghost" id="saveImg">💾 Save image</button>
+    </div>
+    <p class="hint">Tapping a Post button copies the caption and opens your Share menu with the image. Pick Instagram or TikTok, then <b>paste</b> the caption there and post.</p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const state = { platform: 'ig', img: null, captionDirty: false, blobs: {} };
+  const SIZES = { ig: [1080, 1350], tt: [1080, 1920] };
+
+  // ---------- service worker + install ----------
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); deferredPrompt = e; $('installBtn').style.display = 'flex';
+  });
+  $('installBtn').onclick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null;
+    $('installBtn').style.display = 'none';
+  };
+
+  // ---------- helpers ----------
+  const toast = (msg) => {
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3200);
+  };
+  const isArabic = (s) => /[؀-ۿ]/.test(s || '');
+  const STORES = {
+    amazon: 'Amazon', amzn: 'Amazon', noon: 'Noon', shein: 'SHEIN', aliexpress: 'AliExpress', temu: 'Temu',
+    trendyol: 'Trendyol', namshi: 'Namshi', ebay: 'eBay', etsy: 'Etsy', ikea: 'IKEA', zara: 'Zara',
+    hm: 'H&M', 'h&m': 'H&M', jarir: 'Jarir', extra: 'eXtra', sephora: 'Sephora', nike: 'Nike',
+    adidas: 'Adidas', apple: 'Apple', zalando: 'Zalando', asos: 'ASOS', otto: 'Otto', mediamarkt: 'MediaMarkt',
+  };
+  function storeFromUrl(u) {
+    try {
+      const host = new URL(u).hostname.replace(/^www\.|^m\./, '');
+      const parts = host.split('.');
+      for (const p of parts) if (STORES[p]) return STORES[p];
+      const main = parts.length > 2 ? parts[parts.length - 3] : parts[0];
+      return main.charAt(0).toUpperCase() + main.slice(1);
+    } catch { return ''; }
+  }
+  function parseShared(meta) {
+    const all = [meta.title, meta.text, meta.url].filter(Boolean).join(' ');
+    const m = all.match(/https?:\/\/[^\s]+/);
+    const url = meta.url || (m ? m[0] : '');
+    let name = (meta.title && !/^https?:/.test(meta.title)) ? meta.title : '';
+    if (!name && meta.text) name = meta.text.replace(/https?:\/\/[^\s]+/g, '');
+    name = name.replace(/^(check (this|out this)( deal)?( out)?( on \w+)?|take a look( at this)?|look what i found|i found this|شوف هذا|شوفي هذا)[:\s\-–]*/i, '')
+               .replace(/\s+/g, ' ').trim();
+    if (name.length > 110) name = name.slice(0, 107).trim() + '…';
+    const pm = all.match(/(?:SAR|SR|ر\.?س|AED|USD|EUR|€|\$|£)\s?\d[\d.,]*|\d[\d.,]*\s?(?:SAR|SR|ر\.?س|ريال|AED|USD|EUR|€|\$|£)/i);
+    if (pm) name = name.replace(pm[0], '').replace(/[\s\-–|,]+$/, '').trim();
+    return { url, name, price: pm ? pm[0] : '', store: url ? storeFromUrl(url) : '' };
+  }
+
+  // ---------- caption ----------
+  function storeTag(store) {
+    const s = (store || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return s ? '#' + s + 'finds' : '';
+  }
+  function buildCaption() {
+    const name = $('name').value.trim() || ($('lang').value === 'ar' ? 'هذا المنتج' : 'this');
+    const price = $('price').value.trim();
+    const store = $('store').value.trim();
+    const link = $('link').value.trim();
+    const lang = $('lang').value, tone = $('tone').value;
+    const ad = $('isAd').checked, linkIn = $('linkInCaption').checked;
+    let c = '';
+    if (lang === 'ar') {
+      if (tone === 'excited') c = `لقيت ${name} 😍${price ? ` بسعر ${price}` : ''}${store ? ` من ${store}` : ''}\nشو رأيكم، يستاهل؟ 👇`;
+      else if (tone === 'deal') c = `🔥 عرض لا يفوّت 🔥\n${name}${price ? `\n💰 السعر: ${price}` : ''}${store ? `\n🛒 من: ${store}` : ''}\nاحفظوا المنشور قبل ما يخلص العرض! 📌`;
+      else c = [name, price, store].filter(Boolean).join(' | ') + ' ✨';
+      c += '\n\n' + (link ? (linkIn ? `🔗 ${link}` : '🔗 الرابط في البايو') : '');
+      const tags = ['#تسوق', '#تسوق_اونلاين', '#عروض', '#مشترياتي', '#shopping', storeTag(store)];
+      if (ad) tags.unshift('#إعلان', '#ad');
+      c = c.trim() + '\n\n' + tags.filter(Boolean).join(' ');
+    } else {
+      if (tone === 'excited') c = `Just found ${name === 'this' ? 'this' : name} 😍${price ? ` — only ${price}` : ''}${store ? ` on ${store}` : ''}!\nWould you get it? 👇`;
+      else if (tone === 'deal') c = `🔥 DEAL ALERT 🔥\n${name}${price ? `\n💰 ${price}` : ''}${store ? `\n🛒 ${store}` : ''}\nSave this before it's gone! 📌`;
+      else c = [name, price, store].filter(Boolean).join(' | ') + ' ✨';
+      c += '\n\n' + (link ? (linkIn ? `🔗 ${link}` : '🔗 Link in bio') : '');
+      const tags = ['#shopping', '#onlineshopping', '#musthave', '#shoppingfinds', storeTag(store), '#tiktokmademebuyit'];
+      if (ad) tags.unshift('#ad');
+      c = c.trim() + '\n\n' + tags.filter(Boolean).join(' ');
+    }
+    return c;
+  }
+  function refreshCaption(force) {
+    if (force || !state.captionDirty) {
+      $('caption').value = buildCaption();
+      $('caption').dir = $('lang').value === 'ar' ? 'rtl' : 'ltr';
+      state.captionDirty = false;
+    }
+  }
+
+  // ---------- image rendering ----------
+  function roundRect(c, x, y, w, h, r) {
+    c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+  }
+  function wrap(c, text, maxW, maxLines) {
+    const words = text.split(/\s+/); const lines = []; let line = '';
+    for (const w of words) {
+      const test = line ? line + ' ' + w : w;
+      if (c.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test;
+      if (lines.length === maxLines) break;
+    }
+    if (lines.length < maxLines && line) lines.push(line);
+    if (lines.length === maxLines && words.join(' ').length > lines.join(' ').length) {
+      let last = lines[maxLines - 1];
+      while (c.measureText(last + '…').width > maxW && last.length) last = last.slice(0, -1);
+      lines[maxLines - 1] = last + '…';
+    }
+    return lines;
+  }
+  function draw(c, platform) {
+    const [W, H] = SIZES[platform];
+    c.canvas.width = W; c.canvas.height = H;
+    c.save();
+    const img = state.img;
+    if (img) {
+      // blurred cover background
+      const s = Math.max(W / img.width, H / img.height) * 1.1;
+      c.filter = 'blur(48px) brightness(0.55)';
+      c.drawImage(img, (W - img.width * s) / 2, (H - img.height * s) / 2, img.width * s, img.height * s);
+      c.filter = 'none';
+      // contained image (TikTok: keep away from the bottom/right UI)
+      const boxW = W * 0.9, boxH = platform === 'tt' ? H * 0.62 : H * 0.8;
+      const k = Math.min(boxW / img.width, boxH / img.height);
+      const w = img.width * k, h = img.height * k;
+      const x = (W - w) / 2, y = platform === 'tt' ? H * 0.12 + (boxH - h) / 2 : (H - h) / 2;
+      c.shadowColor = 'rgba(0,0,0,.5)'; c.shadowBlur = 40; c.shadowOffsetY = 12;
+      roundRect(c, x, y, w, h, 28); c.fillStyle = '#000'; c.fill();
+      c.shadowColor = 'transparent';
+      c.save(); roundRect(c, x, y, w, h, 28); c.clip(); c.drawImage(img, x, y, w, h); c.restore();
+    } else {
+      const g = c.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, '#7b5cff'); g.addColorStop(1, '#ff3d71');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+      c.fillStyle = 'rgba(255,255,255,.9)'; c.textAlign = 'center';
+      c.font = '700 120px system-ui, sans-serif'; c.fillText('🛍️', W / 2, H * 0.4);
+      if (!$('name').value.trim()) {
+        c.font = '600 44px system-ui, sans-serif';
+        c.fillText('Add a screenshot ↓', W / 2, H * 0.4 + 110);
+      }
+    }
+    const name = $('name').value.trim(), price = $('price').value.trim();
+    const fam = 'system-ui, "Noto Sans Arabic", sans-serif';
+    // product name
+    if (name && ($('showName').checked || !img)) {
+      const rtl = isArabic(name);
+      c.font = `800 ${img ? 54 : 72}px ${fam}`;
+      c.direction = rtl ? 'rtl' : 'ltr'; c.textAlign = 'center';
+      const lines = wrap(c, name, W * 0.84, img ? 2 : 4);
+      const lh = img ? 66 : 88;
+      let y0 = img ? (platform === 'tt' ? H * 0.065 : 90) : H * 0.52;
+      c.fillStyle = '#fff'; c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 16;
+      lines.forEach((ln, i) => c.fillText(ln, W / 2, y0 + i * lh + (img ? 30 : 0)));
+      c.shadowColor = 'transparent'; c.direction = 'ltr';
+    }
+    // price tag
+    if (price && $('showPrice').checked) {
+      c.font = `900 72px ${fam}`; c.direction = isArabic(price) ? 'rtl' : 'ltr'; c.textAlign = 'center';
+      const tw = c.measureText(price).width; const bw = tw + 90, bh = 120;
+      const bx = platform === 'tt' ? 60 : (W - bw - 50);
+      const by = platform === 'tt' ? H * 0.76 : H - bh - 50;
+      c.save(); c.translate(bx + bw / 2, by + bh / 2); c.rotate(-0.04);
+      c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 24; c.shadowOffsetY = 8;
+      roundRect(c, -bw / 2, -bh / 2, bw, bh, 26);
+      const g = c.createLinearGradient(-bw / 2, 0, bw / 2, 0); g.addColorStop(0, '#ff3d71'); g.addColorStop(1, '#ff8a3d');
+      c.fillStyle = g; c.fill(); c.shadowColor = 'transparent';
+      c.fillStyle = '#fff'; c.textBaseline = 'middle'; c.fillText(price, 0, 4);
+      c.restore(); c.direction = 'ltr'; c.textBaseline = 'alphabetic';
+    }
+    c.restore();
+  }
+  let renderTimer;
+  function render() {
+    draw(ctx, state.platform);
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(prepareBlobs, 250);
+  }
+  // pre-render both formats so the share button responds instantly
+  function prepareBlobs() {
+    for (const p of ['ig', 'tt']) {
+      const off = document.createElement('canvas'); const c2 = off.getContext('2d');
+      draw(c2, p);
+      off.toBlob((b) => { state.blobs[p] = b; }, 'image/jpeg', 0.92);
+    }
+  }
+  function loadImage(blob) {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const im = new Image();
+    im.onload = () => { state.img = im; render(); };
+    im.onerror = () => toast('Could not open that image');
+    im.src = url;
+  }
+
+  // ---------- actions ----------
+  async function copy(text, msg) {
+    try { await navigator.clipboard.writeText(text); if (msg) toast(msg); return true; }
+    catch { toast('Copy failed — long-press the caption to copy'); return false; }
+  }
+  async function share(platform) {
+    const caption = $('caption').value;
+    const copied = navigator.clipboard ? navigator.clipboard.writeText(caption).then(() => true, () => false) : Promise.resolve(false);
+    const blob = state.blobs[platform];
+    if (!blob) { toast('One moment, preparing the image…'); prepareBlobs(); return; }
+    const file = new File([blob], `product-${platform === 'ig' ? 'instagram' : 'tiktok'}.jpg`, { type: 'image/jpeg' });
+    const appName = platform === 'ig' ? 'Instagram' : 'TikTok';
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        toast((await copied) ? `Caption copied ✅ Paste it in ${appName}` : 'Shared ✅');
+      } catch (e) { if (e.name !== 'AbortError') toast('Sharing failed: ' + e.message); }
+    } else {
+      download(blob, file.name);
+      toast(`Image saved. Caption ${(await copied) ? 'copied' : 'ready'} — open ${appName} and post it.`);
+    }
+  }
+  function download(blob, name) {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // ---------- wire up ----------
+  $('tabs').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.platform = b.dataset.p;
+    [...$('tabs').children].forEach((x) => x.classList.toggle('on', x === b));
+    render();
+  });
+  $('file').addEventListener('change', (e) => loadImage(e.target.files[0]));
+  ['name', 'price', 'store', 'link'].forEach((id) => $(id).addEventListener('input', () => { refreshCaption(); render(); }));
+  ['lang', 'tone', 'isAd', 'linkInCaption'].forEach((id) => $(id).addEventListener('change', () => refreshCaption()));
+  ['showPrice', 'showName'].forEach((id) => $(id).addEventListener('change', render));
+  $('link').addEventListener('change', () => { if (!$('store').value) { $('store').value = storeFromUrl($('link').value); refreshCaption(); } });
+  $('caption').addEventListener('input', () => { state.captionDirty = true; });
+  $('regen').onclick = () => refreshCaption(true);
+  $('copyCap').onclick = () => copy($('caption').value, 'Caption copied ✅');
+  $('copyLink').onclick = () => $('link').value && copy($('link').value, 'Link copied — paste it in your bio');
+  $('saveImg').onclick = () => {
+    const b = state.blobs[state.platform];
+    if (b) { download(b, `product-${state.platform}.jpg`); toast('Image saved'); } else prepareBlobs();
+  };
+  $('shareIg').onclick = () => share('ig');
+  $('shareTt').onclick = () => share('tt');
+  // paste an image from clipboard (handy on desktop)
+  window.addEventListener('paste', (e) => {
+    const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith('image/'));
+    if (item) loadImage(item.getAsFile());
+  });
+
+  // ---------- receive shared content ----------
+  async function receiveShare() {
+    if (!new URLSearchParams(location.search).has('shared') || !('caches' in window)) return;
+    history.replaceState(null, '', location.pathname);
+    try {
+      const cache = await caches.open('pp-share-v1');
+      const imgRes = await cache.match(new URL('shared-image', location.href).href);
+      const metaRes = await cache.match(new URL('shared-meta', location.href).href);
+      if (metaRes) {
+        const info = parseShared(await metaRes.json());
+        if (info.name) $('name').value = info.name;
+        if (info.price) $('price').value = info.price;
+        if (info.store) $('store').value = info.store;
+        if (info.url) $('link').value = info.url;
+        if (isArabic(info.name)) $('lang').value = 'ar';
+      }
+      if (imgRes) loadImage(await imgRes.blob());
+      else if (metaRes) toast('Link received 👍 Now add a screenshot of the product');
+      for (const k of await cache.keys()) await cache.delete(k);
+    } catch (e) { /* ignore */ }
+    refreshCaption(true); render();
+  }
+
+  refreshCaption(true); render(); receiveShare();
+})();
+</script>
+</body>
+</html>
